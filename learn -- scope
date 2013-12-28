@@ -1,0 +1,43 @@
+$rootScope
+对应的文件为：
+src/ng/rootScope.js
+
+生成语句：
+var $rootScope = new Scope();
+return $rootScope;
+
+
+构造函数：
+function Scope() {
+  this.$id = nextUid();
+  this.$$phase = this.$parent = this.$$watchers =
+                 this.$$nextSibling = this.$$prevSibling =
+                 this.$$childHead = this.$$childTail = null;
+  this['this'] = this.$root =  this;
+  this.$$destroyed = false;
+  this.$$asyncQueue = [];
+  this.$$postDigestQueue = [];
+  this.$$listeners = {};
+  this.$$isolateBindings = {};
+}
+
+this['this'] = this.$root = this;
+该语句表示$rootScope以及它生成的子$scope的$root属性都指向$rootScope
+
+scope的prototype
+
+Scope.prototype = {
+   constructor: Scope,
+   $new: function(isolate),
+   $watch: function(watchExp, listener, objectEquality),
+   $watchCollection: function(obj, listener),
+   $digest: function(),
+   $destroy: function(),
+   $eval: function(expr, locals),
+   $evalAsync: function(expr),
+   $$postDigest : function(fn),
+   $apply: function(expr),
+   $on: function(name, listener),
+   $emit: function(name, args),
+   $broadcast: function(name, args)
+}
