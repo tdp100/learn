@@ -55,3 +55,17 @@ function invoke(fn, self, locals){
           default: return fn.apply(self, args);
         }
 }
+
+factory函数，它是provider的一种简写形式, 用来创建实例方法
+function factory(name, factoryFn) { return provider(name, { $get: factoryFn }); }
+
+service函数，它也是provider的一种简写形式，但它是使用constructor来构造实例
+function service(name, constructor) {
+   return factory(name, ['$injector', function($injector) {
+      return $injector.instantiate(constructor);
+   }]);
+}
+
+value函数，它也是provider的一种简写形式，它直接返回其中的val值作为服务.
+function value(name, val) { return factory(name, valueFn(val)); }
+function valueFn(value) {return function() {return value;};}
