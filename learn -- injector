@@ -6,14 +6,46 @@ $injector
 
  injector 的对象
  return {
-       invoke: invoke,
-       instantiate: instantiate,
-       get: getService,
-       annotate: annotate,
-       has: function(name) {
-         return providerCache.hasOwnProperty(name + providerSuffix) || cache.hasOwnProperty(name);
-       }
-     };
+   invoke: invoke,
+   instantiate: instantiate,
+   get: getService,
+   annotate: annotate,
+   has: function(name) {
+     return providerCache.hasOwnProperty(name + providerSuffix) || cache.hasOwnProperty(name);
+   }
+ };
+
+function createInjector(modulesToLoad) {
+  var INSTANTIATING = {},
+      providerSuffix = 'Provider',
+      path = [],
+      loadedModules = new HashMap(),
+      providerCache = {
+        $provide: {
+            provider: supportObject(provider),
+            factory: supportObject(factory),
+            service: supportObject(service),
+            value: supportObject(value),
+            constant: supportObject(constant),
+            decorator: decorator
+          }
+      },
+      providerInjector = (providerCache.$injector =
+          createInternalInjector(providerCache, function() {
+            throw $injectorMinErr('unpr', "Unknown provider: {0}", path.join(' <- '));
+          })),
+      instanceCache = {},
+      instanceInjector = (instanceCache.$injector =
+          createInternalInjector(instanceCache, function(servicename) {
+            var provider = providerInjector.get(servicename + providerSuffix);
+            return instanceInjector.invoke(provider.$get, provider);
+          }));
+
+
+  forEach(loadModules(modulesToLoad), function(fn) { instanceInjector.invoke(fn || noop); });
+
+  return instanceInjector;
+}
 
 这里提供一个provider_, 如果它是一个函数或者数组，那么将调用providerInjector.instantiate实例化一个对象出来并缓存到providerCache中
 实例对象需要有$get属性，原因在于使用该provider创建一个服务实例时return instanceInjector.invoke(provider.$get, provider);
@@ -69,3 +101,28 @@ function service(name, constructor) {
 value函数，它也是provider的一种简写形式，它直接返回其中的val值作为服务.
 function value(name, val) { return factory(name, valueFn(val)); }
 function valueFn(value) {return function() {return value;};}
+
+
+如何获取injector
+1 通过元素获取injector
+Sometimes you want to get access to the injector of a currently running Angular app from outside Angular. Perhaps, you want to inject and compile some markup after the application has been bootstrapped. You can do this using extra injector() added to JQuery/jqLite elements. See angular.element.
+This is fairly rare but could be the case if a third party library is injecting the markup.
+In the following example a new block of HTML containing a ng-controller directive is added to the end of the document body by JQuery. We then compile and link it into the current AngularJS scope.
+
+var $div = $('<div ng-controller="MyCtrl">{{content.label}}</div>');
+$(document.body).append($div);
+
+angular.element(document).injector().invoke(function($compile) {
+  var scope = angular.element($div).scope();
+  $compile($div)(scope);
+});
+
+2  通过angular.injector(["ng"])
+var $injector = angular.injector(['ng']);
+
+// use the injector to kick off your application
+// use the type inference to auto inject arguments, or use implicit injection
+$injector.invoke(function($rootScope, $compile, $document){
+  $compile($document)($rootScope);
+  $rootScope.$digest();
+});
