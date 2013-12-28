@@ -1,7 +1,22 @@
+$injector
+对应文件：src/auto/injector.js
 
+创建injector的工厂函数
+ function createInternalInjector(cache, factory) {...}
 
-//这里提供一个provider_, 如果它是一个函数或者数组，那么将调用providerInjector.instantiate实例化一个对象出来并缓存到providerCache中
-//实例对象需要有$get属性，原因在于使用该provider创建一个服务实例时return instanceInjector.invoke(provider.$get, provider);
+ injector 的对象
+ return {
+       invoke: invoke,
+       instantiate: instantiate,
+       get: getService,
+       annotate: annotate,
+       has: function(name) {
+         return providerCache.hasOwnProperty(name + providerSuffix) || cache.hasOwnProperty(name);
+       }
+     };
+
+这里提供一个provider_, 如果它是一个函数或者数组，那么将调用providerInjector.instantiate实例化一个对象出来并缓存到providerCache中
+实例对象需要有$get属性，原因在于使用该provider创建一个服务实例时return instanceInjector.invoke(provider.$get, provider);
   function provider(name, provider_) {
     assertNotHasOwnProperty(name, 'service');
     if (isFunction(provider_) || isArray(provider_)) {
@@ -19,7 +34,7 @@
               return instanceInjector.invoke(provider.$get, provider);
             }));
 
-//创建实例的方法 return fn()或者return fn.apply(self, args)
+创建实例的方法 return fn()或者return fn.apply(self, args)
 function invoke(fn, self, locals){
         .....
         // Performance optimization: http://jsperf.com/apply-vs-call-vs-invoke
