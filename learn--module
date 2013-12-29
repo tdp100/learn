@@ -1,0 +1,32 @@
+module
+对应的文件src/loader.js
+  function ensure(obj, name, factory) {
+    return obj[name] || (obj[name] = factory());
+  }
+
+如果给定name在modules中存在，则直接返回，否则使用factory创建一个新的对象
+  return ensure(modules, name, function() {
+  ....
+  }
+
+module对象
+var moduleInstance = {
+   _invokeQueue: invokeQueue,
+   _runBlocks: runBlocks,
+   requires: requires,
+   name: name,
+   provider: invokeLater('$provide', 'provider'),
+   factory: invokeLater('$provide', 'factory'),
+   service: invokeLater('$provide', 'service'),
+   value: invokeLater('$provide', 'value'),
+   constant: invokeLater('$provide', 'constant', 'unshift'),
+   animation: invokeLater('$animateProvider', 'register'),
+   filter: invokeLater('$filterProvider', 'register'),
+   controller: invokeLater('$controllerProvider', 'register'),
+   directive: invokeLater('$compileProvider', 'directive'),
+   config: config,
+   run: function(block) {
+       runBlocks.push(block);
+       return this;
+   }
+}
