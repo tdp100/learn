@@ -1,0 +1,39 @@
+在使用Angular做SPA页面时，会涉及到加载各视图的view和controller， 如果它的controller很多，那么所有的js文件一开始都需要全部加载进行
+
+页面的性能会很慢
+
+我们想找到一种方法，在加载view时才去加载相应的controller
+参考：http://ify.io/lazy-loading-in-angularjs/
+
+        $stateProvider.state("hello.list", {
+            url: "/list",
+            //相对于根路径
+            templateUrl: "hello/views/applist.html",
+            controller:"hello.list.ctrl"
+        });
+        
+        
+修改后：
+$stateProvider.state("hello.detail", {
+            url: "/{id}",
+            //相对于根路径
+            templateUrl: "hello/views/appDetail.html",
+            resolve: {
+                deps: function($q, $rootScope) {
+                    var deferred = $q.defer();
+                    var dependencies = [
+                        'hello/controllers/helloDetailCtrl'
+                    ];
+                    // Load the dependencies
+                    require(dependencies, function(detail) {
+                        // all dependencies have now been loaded by so resolve the promise
+                        $rootScope.$apply(function(){
+                            $controllerProvider.register("hello.detail.ctrl", detail);
+                            deferred.resolve();
+                        });
+                    });
+                    return deferred.promise;
+                }
+            },
+            controller:"hello.detail.ctrl"
+        });
