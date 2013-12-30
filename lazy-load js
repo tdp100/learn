@@ -4,7 +4,7 @@
 
 我们想找到一种方法，在加载view时才去加载相应的controller
 参考：http://ify.io/lazy-loading-in-angularjs/
-
+修改前：
         $stateProvider.state("hello.list", {
             url: "/list",
             //相对于根路径
@@ -14,6 +14,7 @@
         
         
 修改后：
+注：使用require去进行模块化加载
 $stateProvider.state("hello.detail", {
             url: "/{id}",
             //相对于根路径
